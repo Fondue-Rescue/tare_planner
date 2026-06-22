@@ -465,6 +465,8 @@ bool SensorCoveragePlanner3D::initialize() {
       this->create_publisher<std_msgs::msg::Float32>(pub_runtime_topic_, 2);
   momentum_activation_count_pub_ = this->create_publisher<std_msgs::msg::Int32>(
       pub_momentum_activation_count_topic_, 2);
+  returned_home_stopped_pub_ = this->create_publisher<std_msgs::msg::Bool>(
+      "returned_home_stopped", 2);
   // Debug
   pointcloud_manager_neighbor_cells_origin_pub_ =
       this->create_publisher<geometry_msgs::msg::PointStamped>(
@@ -1354,6 +1356,8 @@ bool SensorCoveragePlanner3D::GetLookAheadPoint(
 }
 
 void SensorCoveragePlanner3D::PublishWaypoint() {
+  returned_home_stopped_pub_->publish(std_msgs::msg::Bool().set__data(stopped_));
+  if(stopped_) return;
   geometry_msgs::msg::PointStamped waypoint;
   if (exploration_finished_ && near_home_ && kRushHome) {
     waypoint.point.x = initial_position_.x();
