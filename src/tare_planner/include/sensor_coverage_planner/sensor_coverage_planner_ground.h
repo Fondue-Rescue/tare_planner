@@ -247,6 +247,7 @@ private:
   rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr runtime_pub_;
   rclcpp::Publisher<std_msgs::msg::Int32>::SharedPtr
       momentum_activation_count_pub_;
+  rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr returned_home_stopped_pub_;
   // Debug
   rclcpp::Publisher<geometry_msgs::msg::PointStamped>::SharedPtr
       pointcloud_manager_neighbor_cells_origin_pub_;
