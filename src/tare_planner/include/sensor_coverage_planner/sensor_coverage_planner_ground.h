@@ -241,6 +241,7 @@ private:
   rclcpp::Publisher<nav_msgs::msg::Path>::SharedPtr local_tsp_path_publisher_;
   rclcpp::Publisher<nav_msgs::msg::Path>::SharedPtr exploration_path_publisher_;
   rclcpp::Publisher<geometry_msgs::msg::PointStamped>::SharedPtr waypoint_pub_;
+  rclcpp::Publisher<geometry_msgs::msg::PointStamped>::SharedPtr goalpoint_pub_;
   rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr exploration_finish_pub_;
   rclcpp::Publisher<std_msgs::msg::Int32MultiArray>::SharedPtr
       runtime_breakdown_pub_;
@@ -303,6 +304,7 @@ private:
   double GetRobotToHomeDistance();
   void PublishExplorationState();
   void PublishWaypoint();
+  void waypoint_pub(const geometry_msgs::msg::PointStamped &waypoint);
   bool
   GetLookAheadPoint(const exploration_path_ns::ExplorationPath &local_path,
                     const exploration_path_ns::ExplorationPath &global_path,

@@ -456,6 +456,8 @@ bool SensorCoveragePlanner3D::initialize() {
       this->create_publisher<nav_msgs::msg::Path>("exploration_path", 1);
   waypoint_pub_ = this->create_publisher<geometry_msgs::msg::PointStamped>(
       pub_waypoint_topic_, 2);
+  goalpoint_pub_ = this->create_publisher<geometry_msgs::msg::PointStamped>(
+      "/goal_point", 2);
   exploration_finish_pub_ = this->create_publisher<std_msgs::msg::Bool>(
       pub_exploration_finish_topic_, 2);
   runtime_breakdown_pub_ =
@@ -480,6 +482,19 @@ void SensorCoveragePlanner3D::ExplorationStartCallback(
     const std_msgs::msg::Bool::ConstSharedPtr start_msg) {
   if (start_msg->data) {
     start_exploration_ = true;
+  }
+}
+
+void SensorCoveragePlanner3D::waypoint_pub(const geometry_msgs::msg::PointStamped &waypoint) {
+  if(!exploration_finished_) waypoint_pub_->publish(waypoint);
+  else {
+    geometry_msgs::msg::PointStamped goalpoint;
+    goalpoint.header.frame_id = "map";
+    goalpoint.header.stamp = this->now();
+    goalpoint.point.x = 0.0;
+    goalpoint.point.y = 0.0;
+    goalpoint.point.z = 0.0;
+    goalpoint_pub_->publish(goalpoint);
   }
 }
 
@@ -658,7 +673,7 @@ void SensorCoveragePlanner3D::JoystickCallback(
       waypoint.point.x = robot_position_.x;
       waypoint.point.y = robot_position_.y;
       waypoint.point.z = robot_position_.z;
-      waypoint_pub_->publish(waypoint);
+      waypoint_pub(waypoint);
       std::cout << "reset waypoint" << std::endl;
     }
     reset_waypoint_joystick_axis_value_ =
@@ -677,7 +692,7 @@ void SensorCoveragePlanner3D::ResetWaypointCallback(
   waypoint.point.x = robot_position_.x;
   waypoint.point.y = robot_position_.y;
   waypoint.point.z = robot_position_.z;
-  waypoint_pub_->publish(waypoint);
+  waypoint_pub(waypoint);
   std::cout << "reset waypoint" << std::endl;
 }
 
@@ -694,7 +709,7 @@ void SensorCoveragePlanner3D::SendInitialWaypoint() {
   waypoint.point.x = robot_position_.x + dx;
   waypoint.point.y = robot_position_.y + dy;
   waypoint.point.z = robot_position_.z;
-  waypoint_pub_->publish(waypoint);
+  waypoint_pub(waypoint);
 }
 
 void SensorCoveragePlanner3D::UpdateKeyposeGraph() {
@@ -1378,8 +1393,22 @@ void SensorCoveragePlanner3D::PublishWaypoint() {
     waypoint.point.y = dy + robot_position_.y;
     waypoint.point.z = lookahead_point_.z();
   }
-  misc_utils_ns::Publish(shared_from_this(), waypoint_pub_, waypoint,
-                         kWorldFrameID);
+  // misc_utils_ns::Publish(shared_from_this(), waypoint_pub_, waypoint,
+  //                        kWorldFrameID);
+  if(!exploration_finished_){
+    waypoint.header.frame_id = kWorldFrameID;
+    waypoint.header.stamp = this->now();
+    waypoint_pub_->publish(waypoint);
+  } 
+  else {
+    geometry_msgs::msg::PointStamped goalpoint;
+    goalpoint.header.frame_id = "map";
+    goalpoint.header.stamp = this->now();
+    goalpoint.point.x = 0.0;
+    goalpoint.point.y = 0.0;
+    goalpoint.point.z = 0.0;
+    goalpoint_pub_->publish(goalpoint);
+  }
 }
 
 void SensorCoveragePlanner3D::PublishRuntime() {
